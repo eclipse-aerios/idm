@@ -1,0 +1,122 @@
+# Default values for application.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# String to partially override application.fullname template (will maintain the release name)
+nameOverride: ""
+# String to fully override application.fullname template
+fullnameOverride: ""
+# Deploy all the components in the same node
+chartNodeSelector: {}
+
+# Component keycloak values
+keycloak:
+  tier: external
+  image:
+    repository: quay.io/keycloak/keycloak
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: legacy
+
+  replicaCount: 1
+  service:
+    type: NodePort
+    ports:
+      keycloak:
+        nodePort: ""
+        port: 8080
+        targetPort: 8080
+        containerPort: 8080
+        protocol: TCP
+      https:
+        nodePort: ""
+        port: 8443
+        targetPort: 8443
+        containerPort: 8443
+        protocol: TCP
+  
+  ingress:
+    certManagerIssuer: letsencrypt-prod
+    certManagerClusterIssuer: letsencrypt-prod
+    className: nginx
+    enabled: false
+    hostname: keycloak.test-domain.aerios-project.eu
+    path: "/"
+    tls: 
+      enabled: true
+
+  resources: {}
+  autoscaling:
+    enabled: false
+
+  podSecurityContext: {}
+  securityContext: {}
+
+  envVars:
+    dbAddr: postgres
+    dbDatabase: keycloak
+    dbPassword: password
+    dbSchema: public
+    dbUser: keycloak
+    dbVendor: POSTGRES
+    keycloakPassword: Pa55w0rd
+    keycloakUser: admin
+    proxyAddressForwarding: true
+    hostnamestricthttps: false
+    httpRelativePath: ""
+  
+  tls:
+    enabled: false
+    existingSecret: ""
+    certs:
+      cert: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUQrekNDQXVPZ0F3SUJBZ0lVSGVKdWlaT2lnOVk5NUZOYmk1Wnp0ZW9neS9zd0RRWUpLb1pJaHZjTkFRRUwKQlFBd2dZd3hDekFKQmdOVkJBWVRBa1ZUTVJFd0R3WURWUVFJREFoV1lXeGxibU5wWVRFUk1BOEdBMVVFQnd3SQpWbUZzWlc1amFXRXhEREFLQmdOVkJBb01BMVZRVmpFTU1Bb0dBMVVFQ3d3RFZWQldNUnd3R2dZRFZRUUREQk53Ck5DNWhaWEp2Y3kxd2NtOXFaV04wTG1WMU1SMHdHd1lKS29aSWh2Y05BUWtCRmc1eWNtVnBjMmx0UUhWd2RpNWwKY3pBZUZ3MHlOREV4TURVd09UTXdNamhhRncweU5URXhNRFV3T1RNd01qaGFNSUdNTVFzd0NRWURWUVFHRXdKRgpVekVSTUE4R0ExVUVDQXdJVm1Gc1pXNWphV0V4RVRBUEJnTlZCQWNNQ0ZaaGJHVnVZMmxoTVF3d0NnWURWUVFLCkRBTlZVRll4RERBS0JnTlZCQXNNQTFWUVZqRWNNQm9HQTFVRUF3d1RjRFF1WVdWeWIzTXRjSEp2YW1WamRDNWwKZFRFZE1Cc0dDU3FHU0liM0RRRUpBUllPY25KbGFYTnBiVUIxY0hZdVpYTXdnZ0VpTUEwR0NTcUdTSWIzRFFFQgpBUVVBQTRJQkR3QXdnZ0VLQW9JQkFRQ2pHTFVXVmtOYktHU0huRGFnL1B4K0hiR1oxRGNrQ1JuM1BYN29rQ1lVCjU4bU9qT1FZbGUzNGVXVjF5a3pWQmp6TTdqUEExRGJ1dkJFYS9WSzNzNHhRVVJCdzNuODFtbGxCNjhrclkrWDgKMzZhQXo0TDFJdGNEbDk0QUk1SEo3UWxrYUE3V25LUzRWYXllVmhWZG5tSzhrYnBBYzRKeHdBU3MzdHRJN2g2UgpXT0VoZ0phS3MxQXFJOVlQK1hsaGZjV0tWY0NyYU0rMXhOVjJIMXd3M0FGUndmdi9JZDRkRE1uZVB2bW9aYjJBClJKWm5lSkVEWmVDdEZzYlFMWjZtK244a0l3UHZySU9iejBWaStCN21sNEtQenpoaHZCRVFZRitJbUwxa1ZrTlIKWmp4cktDMFNIaTNKQWpNTmVxNE5JbVBoVjhlc1dBQ1pMNllCeHdBWG5lVHJBZ01CQUFHalV6QlJNQjBHQTFVZApEZ1FXQkJSdzFtZFZMRFZpdXhHSTE3VWJwTHdpZ3gwWkNUQWZCZ05WSFNNRUdEQVdnQlJ3MW1kVkxEVml1eEdJCjE3VWJwTHdpZ3gwWkNUQVBCZ05WSFJNQkFmOEVCVEFEQVFIL01BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQngKM2xoWEVVbDVOMmtUWGtwdE1NN1pxYmhPQXU1TjlJaWk3UFdUaHBXM29rVVN6SkoybHN4ZXQ4d09Va05SY3VYMwpsTWZnKzk4ODRJVEx4c2xZeERZYXE1OU82TWJ0L2JpcllQQlUzMDR0U3E0TEs4dzJ2MzQ0NU12dUw1ZFVveUxCCkp2QVArb0FtVjIydGN5N0NkRTVEd0pHTTEvSUZyRmZTTkI1U2lDeUJhUVRiZ1Z5ZGJ4RUVBUnQ5NmljcWRWQlkKcjA5VnVWcVFGajcyMHp1bk94a2pYaTFGYXZ1OUdwZFl2bE83emdMYTAxWnIzYzJMemtMYWs2cDFpeGZmdzkrZwpIV1ZwNzZVVFJHVnBUaEFjKys5c2xzQ01sRU5yVG9qUVNRTVZCU3ZueW1YUXlqajdKc05md3hOR2xVVHhLZ2V2CnZaR0M1SWVWR29DQktVeGlrMHF3Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+      key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2QUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktZd2dnU2lBZ0VBQW9JQkFRQ2pHTFVXVmtOYktHU0gKbkRhZy9QeCtIYkdaMURja0NSbjNQWDdva0NZVTU4bU9qT1FZbGUzNGVXVjF5a3pWQmp6TTdqUEExRGJ1dkJFYQovVkszczR4UVVSQnczbjgxbWxsQjY4a3JZK1g4MzZhQXo0TDFJdGNEbDk0QUk1SEo3UWxrYUE3V25LUzRWYXllClZoVmRubUs4a2JwQWM0Snh3QVNzM3R0STdoNlJXT0VoZ0phS3MxQXFJOVlQK1hsaGZjV0tWY0NyYU0rMXhOVjIKSDF3dzNBRlJ3ZnYvSWQ0ZERNbmVQdm1vWmIyQVJKWm5lSkVEWmVDdEZzYlFMWjZtK244a0l3UHZySU9iejBWaQorQjdtbDRLUHp6aGh2QkVRWUYrSW1MMWtWa05SWmp4cktDMFNIaTNKQWpNTmVxNE5JbVBoVjhlc1dBQ1pMNllCCnh3QVhuZVRyQWdNQkFBRUNnZ0VBRGlaNG42V0FWb3Bjbm45cEpmS05IWXdKK3FTMDNBV0dJVE5PclhMRU94QVoKSnFzR3B6TnE0Q0g0TVk0SnVIbkFFSytpQWRybm9UTGo4UW1GZ2Jhc045T3dyM28rWXpJdkNFOGl0d2NGenpqQQpRM0M5bGZNZDRJdnVrT2lGSDVYWE9NVG1kS3hHaGsrNG1Fd3pzbG1waTE3QllCSWxnU1Q5d3RuYkFLcllNQmY0ClNuM0ZnckZLUmRuNDFGQTdaN0ZKOThibzFNOGpodWh3TC81U2ZVaG1YTWQrYmg4cWpZanNBOVA2OWVudkFiVWwKNXhxemluZWRuUHA1aHBLaEJhQXZVbXhNb0dmbUozZEdHaElPWVRvd3hSR1Y0YXMxSUpUNURGTG44MnoyenhJNwpxcDcvVXpiUDFMYXAwNENGUUxyTmlTaUJaOStMZ0FxRGZ4dW8xb2Mzd1FLQmdRRG1TaDAzMGFDT0dhZEdjYWtrCjFVTTlkRVZwV3FablRjbFlEd3NjR0lKR09sS2sraDM5SGhIV0hIYisvczdiTkFLWm1udEN0WGxvS2N6YkU5eGQKT2M2NXFENXRNVHdBbTN3MkNHdC90RlVaSVlqWS9hS3ZON1hXRGhGaGs5bnBoV05pLzJjTzRUcUpwR3kydXZuZwpCdGlGQW5QNTFSQzJ3TzYrY1E1Njl0N0RFUUtCZ1FDMVRpZlpoa0JlSnZ5cVdXR0txeXhSMUthd3AwdHhPb0xICmZhaGFsaHEyL0lTSlNFd252WXBxVUR2VkhqK1dsZWgvNVYxYkNjd00rTFJWQ3IyQ1AzYWxsSlVmQ3BneVdWQzgKL2N1TEpmek9mdFBLcTBhNnV5QnNiTzhVTm81d2ZLSkpmVWlNazlmallGb2ZCd2Q2clF6ODI0NXFVc2RGaW9zZgpnREM3eHZmd093S0JnQ1gwL1UvZisyaXdqY09zcEVadjZEOU8xTW9DcVA3SjhXL1VPdTZNazV4anJJK0lzanl3CkloeDZZSnF6QVFGY1Z6bGVId2JseG5jR3ZMODNUTkVJNEN2MXNTUnFRd3VPbFRDS3ZyMHp5ZnIwYmd2bDhsU1QKQ0NPWitmOXRVVE9PU3MxY2IyNGliWFdXWmx6UUFMT09MVTN2RTVLUUxjc1JqY2hSOWlNS1lia2hBb0dBTStWZQpKTFozNER0YW9Vd2FUbjMybnFtMjJPUGFCVndSS1JiL3hJWW91VzRJWmQ5SzVTa3M0SWQ4eU9EeXBLRGVQeFdoCkpqamtybVhXQUcybGx3MmhZWDNwUFV4a0NpMWtuZVFyaWZYaXFoekZkTUtYNlVVODM2eEN0czl5OENITXRpcGwKUk0vZ3dOWElsZzhHQmdoWXFsd1NKTDd6Q1NYQjhzOVhvN2d0S2hjQ2dZQlc4ZjRyZngvREt6MytQdEFQL2IyZAp6YzdFMGFlamhVZzQ3QTJKUHlMSzkzUTBYUjVzMlI0dWNGbUVoQzVwTXRXR0o3YUxDaUpWTE5JWFdYTG9heUFyCnZIQWZCWkVETElkb0dOTXVKdFJGTW9VOVAzTnd5MGNXVDQwUlpWbmMwOFYxdUpiQ2JycjBvUjhFVFdwQldITWkKNVlJWXozL0JQQy9zWmpNTGY4ZkNwQT09Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Component database values
+database:
+  tier: internal
+  image:
+    repository: postgres
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: 16.4
+
+  replicaCount: 1
+  service:
+    type: NodePort
+    ports:
+      db:
+        nodePort: ""
+        port: 5432
+        targetPort: 5432
+        containerPort: 5432
+        protocol: TCP
+
+  resources: {}
+  autoscaling:
+    enabled: false
+  podSecurityContext: {}
+  securityContext: {}
+
+  envVars:
+    postgresDb: keycloak
+    postgresPass: password
+    postgresUser: keycloak
+
+  persistence:
+    enabled: true
+    existingClaim: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 5Gi
+
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+

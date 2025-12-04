@@ -1,0 +1,34 @@
+{{- if .Values.keycloak.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ printf "%s-ingress" (include "keycloak.fullname" .) }}
+  namespace: {{ .Release.Namespace | quote }}
+  annotations:
+    {{- if .Values.keycloak.ingress.certManagerIssuer }}
+    cert-manager.io/issuer: {{ .Values.keycloak.ingress.certManagerIssuer }}
+    {{- else if .Values.keycloak.ingress.certManagerClusterIssuer }}
+    cert-manager.io/cluster-issuer: {{ .Values.keycloak.ingress.certManagerClusterIssuer }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.keycloak.ingress.className }}
+  {{- if .Values.keycloak.ingress.tls.enabled }}
+  tls:
+    {{- with .Values.keycloak.ingress }}
+    - hosts:
+       - {{ .hostname }}
+      secretName: {{ printf "%s-tls" .hostname }}
+    {{- end }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.keycloak.ingress.hostname | quote}}
+      http:
+        paths:
+          - path: {{ .Values.keycloak.ingress.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "keycloak.fullname" . }}
+                port:
+                  number: {{ .Values.keycloak.service.ports.keycloak.port }}
+{{- end }}
