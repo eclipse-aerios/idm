@@ -47,6 +47,12 @@ spec:
         {{- toYaml .Values.keycloak.podSecurityContext | nindent 8 }}
       containers:
         - name: keycloak
+          command:
+            - /opt/keycloak/bin/kc.sh
+          args:
+            - start
+            # - --optimized
+            - --http-relative-path=/auth
           securityContext:
             {{- toYaml .Values.keycloak.securityContext | nindent 12 }}
           image: "{{ .Values.keycloak.image.repository }}:{{ .Values.keycloak.image.tag | default .Chart.AppVersion }}"
@@ -61,27 +67,41 @@ spec:
           resources:
             {{- toYaml .Values.keycloak.resources | nindent 12 }}
           env:
-            - name: DB_ADDR
+            - name: KC_DB_URL_HOST
+              {{- if .Values.keycloak.useExternalDb }}
+              value: {{ .Values.keycloak.envVars.dbAddr }}
+              {{- else }}
               value: {{ include "database.fullname" . }}
+              {{- end }}
             {{- with .Values.keycloak.envVars }}
-            - name: PROXY_ADDRESS_FORWARDING
+            - name: KC_PROXY_PROTOCOL_ENABLED
               value: {{ .proxyAddressForwarding | quote }}
-            - name: DB_DATABASE
+            - name: KC_PROXY_HEADERS
+              value: xforwarded
+            - name: KC_DB_URL_DATABASE
               value: {{ .dbDatabase | quote }}
-            - name: DB_PASSWORD
+            - name: KC_DB_PASSWORD
               value: {{ .dbPassword | quote }}
-            - name: DB_SCHEMA
+            - name: KC_DB_SCHEMA
               value: {{ .dbSchema | quote }}
-            - name: DB_USER
+            - name: KC_DB_USERNAME
               value: {{ .dbUser | quote }}
-            - name: DB_VENDOR
+            - name: KC_DB
               value: {{ .dbVendor | quote }}
-            - name: KEYCLOAK_PASSWORD
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
               value: {{ .keycloakPassword | quote }}
-            - name: KEYCLOAK_USER
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
               value: {{ .keycloakUser | quote }}
-            - name: KC_HOSTNAME_STRICT_HTTPS
-              value: {{ .hostnamestricthttps | quote }}
+            # - name: KC_HOSTNAME_STRICT_HTTPS
+            #   value: {{ .hostnamestricthttps | quote }}
+            - name: KC_HOSTNAME
+              value: {{ .hostname | quote }}
+            - name: KC_HOSTNAME_STRICT
+              value: {{ .hostnamestrict | quote }}
+            - name: KC_HTTP_ENABLED
+              value: {{ .httpEnabled | quote }}
+            - name: KC_HEALTH_ENABLED
+              value: "true"
             {{- if .httpRelativePath }}
             - name: KC_HTTP_RELATIVE_PATH 
               value: {{ .httpRelativePath }}
