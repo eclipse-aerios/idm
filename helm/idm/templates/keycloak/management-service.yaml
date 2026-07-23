@@ -1,0 +1,21 @@
+{{- if or .Values.keycloak.envVars.healthEnabled .Values.keycloak.envVars.metricsEnabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "keycloak.fullname" . }}-management
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "keycloak.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.keycloak.managementService.type }}
+  ports:
+    - name: management
+      port: {{ .Values.keycloak.managementService.ports.management.port }}
+      targetPort: {{ .Values.keycloak.managementService.ports.management.targetPort }}
+      protocol: {{ .Values.keycloak.managementService.ports.management.protocol }}
+      {{- if and (or (eq .Values.keycloak.managementService.type "NodePort") (eq .Values.keycloak.managementService.type "LoadBalancer")) (not (empty .Values.keycloak.managementService.ports.management.nodePort)) }}
+      nodePort: {{ .Values.keycloak.managementService.ports.management.nodePort }}
+      {{ end }}
+  selector:
+    {{- include "keycloak.selectorLabels" . | nindent 4 }}
+{{- end }}

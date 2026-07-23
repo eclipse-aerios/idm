@@ -19,6 +19,7 @@ keycloak:
     tag: "26.6.3"
 
   replicaCount: 1
+
   service:
     type: NodePort
     ports:
@@ -33,6 +34,16 @@ keycloak:
         port: 8443
         targetPort: 8443
         containerPort: 8443
+        protocol: TCP
+
+  managementService:
+    type: ClusterIP
+    ports:
+      management:
+        nodePort: ""
+        port: 9000
+        targetPort: 9000
+        containerPort: 9000
         protocol: TCP
 
   ingress:
@@ -53,19 +64,22 @@ keycloak:
   securityContext: {}
 
   envVars:
-    dbAddr: postgres
     dbDatabase: keycloak
     dbPassword: password
     dbSchema: public
     dbUser: keycloak
     dbVendor: postgres
-    keycloakPassword: Pa55w0rd
+    externalDbAddr: postgres-kc-migration
+    externalDbPort: 5432
+    keycloakPassword: p4ssw0rd
     keycloakUser: admin
     proxyAddressForwarding: false
-    hostname: "keycloak-26.eclipse-aerios.eu"
+    healthEnabled: true
+    hostname: "keycloak.eclipse-aerios.eu"
     hostnamestrict: false
     httpEnabled: true
     httpRelativePath: ""
+    metricsEnabled: false
 
   tls:
     enabled: false
@@ -117,7 +131,7 @@ database:
     existingClaim: ""
     accessModes:
       - ReadWriteOnce
-    size: 5Gi
+    size: 500Mi
 
   imagePullSecrets: []
   nodeSelector: {}

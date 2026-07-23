@@ -52,48 +52,58 @@ spec:
           args:
             - start
             # - --optimized
-            - --http-relative-path=/auth
           securityContext:
             {{- toYaml .Values.keycloak.securityContext | nindent 12 }}
           image: "{{ .Values.keycloak.image.repository }}:{{ .Values.keycloak.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.keycloak.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.keycloak.service.ports.keycloak.containerPort }}
+            - name: http
+              containerPort: {{ .Values.keycloak.service.ports.keycloak.containerPort }}
               protocol: {{ .Values.keycloak.service.ports.keycloak.protocol }}
             {{- if .Values.keycloak.tls.enabled }}
-            - containerPort: {{ .Values.keycloak.service.ports.https.containerPort }}
+            - name: https
+              containerPort: {{ .Values.keycloak.service.ports.https.containerPort }}
               protocol: {{ .Values.keycloak.service.ports.https.protocol }}
+            {{- end }}
+            {{- if or .Values.keycloak.envVars.healthEnabled .Values.keycloak.envVars.metricsEnabled }}
+            - name: management
+              containerPort: {{ .Values.keycloak.managementService.ports.management.containerPort }}
+              protocol: {{ .Values.keycloak.managementService.ports.management.protocol }}
             {{- end }}
           resources:
             {{- toYaml .Values.keycloak.resources | nindent 12 }}
           env:
             - name: KC_DB_URL_HOST
               {{- if .Values.keycloak.useExternalDb }}
-              value: {{ .Values.keycloak.envVars.dbAddr }}
+              value: {{ .Values.keycloak.envVars.externalDbAddr | quote }}
               {{- else }}
-              value: {{ include "database.fullname" . }}
+              value: {{ include "database.fullname" . | quote}}
+              {{- end }}
+            - name: KC_DB_URL_PORT
+              {{- if .Values.keycloak.useExternalDb }}
+              value: {{ .Values.keycloak.envVars.externalDbPort | quote }}
+              {{- else }}
+              value: {{ .Values.database.service.ports.db.port | quote }}
               {{- end }}
             {{- with .Values.keycloak.envVars }}
             - name: KC_PROXY_PROTOCOL_ENABLED
               value: {{ .proxyAddressForwarding | quote }}
             - name: KC_PROXY_HEADERS
-              value: xforwarded
-            - name: KC_DB_URL_DATABASE
-              value: {{ .dbDatabase | quote }}
-            - name: KC_DB_PASSWORD
-              value: {{ .dbPassword | quote }}
-            - name: KC_DB_SCHEMA
-              value: {{ .dbSchema | quote }}
-            - name: KC_DB_USERNAME
-              value: {{ .dbUser | quote }}
+              value: "xforwarded"
             - name: KC_DB
               value: {{ .dbVendor | quote }}
-            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
-              value: {{ .keycloakPassword | quote }}
+            - name: KC_DB_SCHEMA
+              value: {{ .dbSchema | quote }}
+            - name: KC_DB_URL_DATABASE
+              value: {{ .dbDatabase | quote }}
+            - name: KC_DB_USERNAME
+              value: {{ .dbUser | quote }}
+            - name: KC_DB_PASSWORD
+              value: {{ .dbPassword | quote }}
             - name: KC_BOOTSTRAP_ADMIN_USERNAME
               value: {{ .keycloakUser | quote }}
-            # - name: KC_HOSTNAME_STRICT_HTTPS
-            #   value: {{ .hostnamestricthttps | quote }}
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              value: {{ .keycloakPassword | quote }}
             - name: KC_HOSTNAME
               value: {{ .hostname | quote }}
             - name: KC_HOSTNAME_STRICT
@@ -101,7 +111,9 @@ spec:
             - name: KC_HTTP_ENABLED
               value: {{ .httpEnabled | quote }}
             - name: KC_HEALTH_ENABLED
-              value: "true"
+              value: {{ .healthEnabled | quote }}
+            - name: KC_METRICS_ENABLED
+              value: {{ .metricsEnabled | quote }}
             {{- if .httpRelativePath }}
             - name: KC_HTTP_RELATIVE_PATH 
               value: {{ .httpRelativePath }}
