@@ -1,4 +1,4 @@
-name: Publish Helm chart in the aeriOS Helm chart repository (https://github.com/eclipse-aerios/resources/tree/main/charts)
+name: Publish Docker Compose files in the aeriOS Docker Compose repository (https://github.com/eclipse-aerios/resources/tree/main/docker-compose)
 
 on:
   push:
