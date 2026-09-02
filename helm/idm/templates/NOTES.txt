@@ -1,10 +1,10 @@
 This Helm chart has been created using the ravaga Helm chart generator (https://github.com/ravaga/helm-chart-generator)!
 
-Thank you for installing {{ .Chart.Name }}.
+Thank you for installing {{ .Chart.Name }}, which is part of Eclipse aeriOS.
 
 Your release is named {{ .Release.Name }}.
 
-1. Get the application URL by running these commands:
+Get the application URL by running these commands:
 {{- if contains "NodePort" .Values.keycloak.service.type }}
   export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "keycloak.fullname" . }})
   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
@@ -19,4 +19,62 @@ Your release is named {{ .Release.Name }}.
   export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
   echo "Visit http://127.0.0.1:8080 to use your application"
   kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- end }}
+
+{{- if not .Values.keycloak.credentials.existingSecret }}
+
+The Keycloak admin user credentials have been stored in Kubernetes Secret:
+
+  {{ include "keycloak.fullname" . }}
+
+Username:
+  {{ include "keycloak.adminUsername" . }}
+
+Retrieve the generated password with:
+
+  kubectl get secret {{ include "keycloak.fullname" . }} \
+    -n {{ .Release.Namespace }} \
+    -o jsonpath="{.data.password}" | base64 --decode; echo
+
+{{- else }}
+
+Credentials are provided through the existing Secret:
+
+  {{ .Values.keycloak.credentials.existingSecret }}
+
+Retrieve the password with:
+
+  kubectl get secret {{ .Values.keycloak.credentials.existingSecret }} \
+    -n {{ .Release.Namespace }} \
+    -o jsonpath="{.data.password}" | base64 --decode; echo
+
+{{- end }}
+
+{{- if not .Values.database.credentials.existingSecret }}
+
+The PostgreSQL database user credentials have been stored in Kubernetes Secret:
+
+  {{ include "database.fullname" . }}
+
+Username:
+  {{ include "database.username" . }}
+
+Retrieve the generated password with:
+
+  kubectl get secret {{ include "database.fullname" . }} \
+    -n {{ .Release.Namespace }} \
+    -o jsonpath="{.data.password}" | base64 --decode; echo
+
+{{- else }}
+
+Credentials are provided through the existing Secret:
+
+  {{ .Values.database.credentials.existingSecret }}
+
+Retrieve the password with:
+
+  kubectl get secret {{ .Values.database.credentials.existingSecret }} \
+    -n {{ .Release.Namespace }} \
+    -o jsonpath="{.data.password}" | base64 --decode; echo
+
 {{- end }}

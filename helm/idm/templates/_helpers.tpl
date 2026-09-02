@@ -71,6 +71,28 @@ tier: {{ .Values.keycloak.tier }}
 {{- end }}
 
 {{/*
+Component keycloak admin credentials secret
+*/}}
+
+{{/*
+Resolve the Keycloak admin username.
+*/}}
+{{- define "keycloak.adminUsername" -}}
+{{- default "admin" .Values.keycloak.credentials.adminUsername -}}
+{{- end -}}
+
+{{/*
+Name of the Secret containing Keycloak bootstrapadmin credentials.
+*/}}
+{{- define "keycloak.adminSecretName" -}}
+{{- if .Values.keycloak.credentials.existingSecret -}}
+{{- .Values.keycloak.credentials.existingSecret -}}
+{{- else -}}
+{{- printf "%s-admin" (include "keycloak.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Name of the component database.
 */}}
 {{- define "database.name" -}}
@@ -116,3 +138,20 @@ isMainInterface: "no"
 tier: {{ .Values.database.tier }}
 {{- end }}
 
+{{/*
+Resolve the PostgreSQL db username.
+*/}}
+{{- define "database.username" -}}
+{{- default "postgres" .Values.database.credentials.username -}}
+{{- end -}}
+
+{{/*
+Name of the Secret containing PostgreSQL db user credentials.
+*/}}
+{{- define "database.secretName" -}}
+{{- if .Values.database.credentials.existingSecret -}}
+{{- .Values.database.credentials.existingSecret -}}
+{{- else -}}
+{{- printf "%s" (include "database.fullname" .) -}}
+{{- end -}}
+{{- end -}}

@@ -52,7 +52,7 @@ extraDeploy: []
 replicaCount: 1
 
 image:
-  repository: bitnamilegacy/openldap
+  repository: eclipseaerios/openldap
   tag: 2.6.3
   pullPolicy: Always
   pullSecrets: []

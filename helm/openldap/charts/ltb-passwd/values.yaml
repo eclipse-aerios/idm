@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: tiredofit/self-service-password
+  repository: eclipseaerios/self-service-password
   tag: 5.3.1
   pullPolicy: Always
   pullSecrets: []

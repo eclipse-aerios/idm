@@ -4,14 +4,6 @@ volumes:
   postgres_data:
     driver: local
 services:
-  postgres:
-    image: postgres:16.4
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: keycloak
-      POSTGRES_USER: <db-username>
-      POSTGRES_PASSWORD: <db-password>
   keycloak:
     image: quay.io/keycloak/keycloak:26.6.3
     environment:
@@ -19,7 +11,8 @@ services:
       KC_PROXY_HEADERS: xforwarded
       KC_DB: postgres
       KC_DB_SCHEMA: public
-      KC_DB_URL_HOST: postgres
+      KC_DB_URL_HOST: external-postgres
+      KC_DB_URL_PORT: 5432
       KC_DB_URL_DATABASE: keycloak
       KC_DB_USERNAME: <db-username>
       KC_DB_PASSWORD: <db-password>
@@ -43,5 +36,3 @@ services:
     # Enable TLS
     # volumes:
     #   - ./certs:/etc/keycloak/certs
-    depends_on:
-      - postgres

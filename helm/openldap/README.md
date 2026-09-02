@@ -5,7 +5,7 @@
 
 # OpenLDAP Helm Chart
 ## Disclaimer
-This version now use the [Bitnami Openldap](https://hub.docker.com/r/bitnami/openldap) container image.
+The OpenLDAP container image from Eclipse aeriOS has been built from the [Bitnami Openldap](https://hub.docker.com/r/bitnami/openldap) container image.
 
 More detail on the container image can be found [here](https://github.com/bitnami/containers/tree/main/bitnami/openldap)
 
