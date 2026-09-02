@@ -63,16 +63,21 @@ keycloak:
   podSecurityContext: {}
   securityContext: {}
 
+  credentials:
+    existingSecret: ""
+    username: ""
+
+    # Only intended for explicit user configuration.
+    # If empty and existingSecret is not set,
+    # a random password is generated during installation.
+    password: ""
+
   envVars:
     dbDatabase: keycloak
-    dbPassword: password
     dbSchema: public
-    dbUser: keycloak
     dbVendor: postgres
     externalDbAddr: postgres-kc-migration
     externalDbPort: 5432
-    keycloakPassword: p4ssw0rd
-    keycloakUser: admin
     proxyAddressForwarding: false
     healthEnabled: true
     hostname: "keycloak.eclipse-aerios.eu"
@@ -106,7 +111,7 @@ database:
 
   replicaCount: 1
   service:
-    type: NodePort
+    type: ClusterIP
     ports:
       db:
         nodePort: ""
@@ -123,8 +128,15 @@ database:
 
   envVars:
     postgresDb: keycloak
-    postgresPass: password
-    postgresUser: keycloak
+
+  credentials:
+    existingSecret: ""
+    username: ""
+
+    # Only intended for explicit user configuration.
+    # If empty and existingSecret is not set,
+    # a random password is generated during installation.
+    password: ""
 
   persistence:
     enabled: true

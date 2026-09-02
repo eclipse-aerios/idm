@@ -96,14 +96,6 @@ spec:
               value: {{ .dbSchema | quote }}
             - name: KC_DB_URL_DATABASE
               value: {{ .dbDatabase | quote }}
-            - name: KC_DB_USERNAME
-              value: {{ .dbUser | quote }}
-            - name: KC_DB_PASSWORD
-              value: {{ .dbPassword | quote }}
-            - name: KC_BOOTSTRAP_ADMIN_USERNAME
-              value: {{ .keycloakUser | quote }}
-            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
-              value: {{ .keycloakPassword | quote }}
             - name: KC_HOSTNAME
               value: {{ .hostname | quote }}
             - name: KC_HOSTNAME_STRICT
@@ -119,6 +111,26 @@ spec:
               value: {{ .httpRelativePath }}
             {{- end }}
             {{- end }}
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "keycloak.adminSecretName" . }}
+                  key: username
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "keycloak.adminSecretName" . }}
+                  key: password
+            - name: KC_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "database.secretName" . }}
+                  key: username
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "database.secretName" . }}
+                  key: password
             {{- if .Values.keycloak.tls.enabled }}
             - name: KC_HTTPS_CERTIFICATE_FILE
               value: "/etc/certs/cert.pem"

@@ -37,7 +37,6 @@ The primary goal of the Identity Manager is to facilitate secure access control 
     ```
 
 
-
 ### Tutorial
 
 1. Clone the repository containing the Identity Manager's source code and configuration files.
@@ -66,19 +65,21 @@ This last package has been developed to deploy the default aeriOS default users.
   - verticaldeployer1 - verticaldeployer1
   - aeriosuser1 - aeriosuser1
   - externaluser1 - externaluser1
+  
+> **Warning**
+>
+> These default users are intended for development purposes only. Remove them before deploying to a production environment. They can be deleted after installation from the **Keycloak Admin Console**.
 
-In order to check the actual users/roles/groups or generate new ones, the OpenLDAP portal, phpldapadmin dashboard,  can be accessed forwarding teh port of the service and accessing :
+In order to check the actual users/roles/groups or generate new ones, the OpenLDAP portal, phpldapadmin dashboard, can be accessed forwarding teh port of the service and accessing :
 
 ```bash
 kubectl port-forward svc/openldap-phpldapadmin 8080:80
 ```
 
-Once the port is forwarded, the dashboard can be accessed via http://localhost:8080 with the following credentials:
-
-  - user: cn=admin,dc=example,dc=org
-  - pass: Not@SecurePassw0rd
+Once the port is forwarded, the dashboard can be accessed via http://localhost:8080 with the configured credentials
 
 In the folder OpenLDAP_templates templates for generating new users/roles/groups can be found. Once the .ldif file with the necessary data has been generated, it can be imported from the OpenLDAP dashboard.
+
 ### Keycloak
 
 ⚠️**Warning**

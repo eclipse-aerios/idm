@@ -1,0 +1,90 @@
+name: Publish Helm chart in the aeriOS Helm chart repository (https://github.com/eclipse-aerios/resources/tree/main/charts)
+
+on:
+  push:
+    branches: ["main"]
+    paths: ["helm/idm/**", .github/workflows/publish-helm-chart.yml]
+    tags: ["*"]
+  pull_request:
+    branches: ["main"]
+    paths: ["helm/idm/**", .github/workflows/publish-helm-chart.yml]
+  workflow_dispatch: {} # allows manual trigger
+
+concurrency:
+  group: resources-repository-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  CHART_DIRECTORY: helm/idm
+  HELM_REPOSITORY: eclipse-aerios/resources
+  HELM_REPOSITORY_BRANCH: main
+  HELM_REPOSITORY_URL: https://eclipse-aerios.github.io/resources/charts
+
+jobs:
+  publish:
+    name: Package and publish Helm chart
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out application repository
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Update chart dependencies
+        run: helm dependency update "${CHART_DIRECTORY}"
+
+      - name: Lint chart
+        run: helm lint "${CHART_DIRECTORY}"
+
+      - name: Render chart
+        run: helm template test-release "${CHART_DIRECTORY}" > /dev/null
+
+      - name: Package chart
+        run: |
+          mkdir -p packaged-chart
+          helm package "${CHART_DIRECTORY}" --destination packaged-chart
+
+      - name: Check out Helm repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.HELM_REPOSITORY }}
+          ref: ${{ env.HELM_REPOSITORY_BRANCH }}
+          token: ${{ secrets.DEPLOY_TOKEN }}
+          path: helm-repository
+
+      - name: Copy chart package
+        run: |
+          cp packaged-chart/*.tgz helm-repository/charts
+
+      - name: Update Helm repository index
+        working-directory: helm-repository
+        run: |
+          helm repo index charts \
+            --url "${{ env.HELM_REPOSITORY_URL }}" \
+            --merge ./charts/index.yaml --debug
+
+      - name: Commit and push
+        working-directory: helm-repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          cd ./charts
+          git add index.yaml "*.tgz"
+          cd ..
+
+          if git diff --cached --quiet; then
+            echo "No Helm repository changes to publish."
+            exit 0
+          fi
+
+          CHART_VERSION="$(helm show chart ../${CHART_DIRECTORY} | awk '/^version:/ {print $2}')"
+          CHART_NAME="$(helm show chart ../${CHART_DIRECTORY} | awk '/^name:/ {print $2}')"
+
+          git commit -m "Publish ${CHART_NAME} ${CHART_VERSION} Helm chart"
+          git push origin "${HELM_REPOSITORY_BRANCH}"
